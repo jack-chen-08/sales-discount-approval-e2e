@@ -1,5 +1,7 @@
-"""基础约束：原价免审批、折扣区间、组织隔离、v1 别名一致性。"""
+"""基础约束：原价免审批、折扣区间、组织隔离、v1 别名一致性、密钥 fail-closed。"""
 from __future__ import annotations
+
+import pytest
 
 from helpers import make_quote, submit_approval, user
 
@@ -42,3 +44,14 @@ def test_roles_are_seeded_for_ui(client, seed):
     roles = {u["role"] for u in users}
     assert roles == {"consultant", "ops_supervisor", "club_manager"}
     assert user(seed, "club") in {u["id"] for u in users}
+
+
+def test_wecom_secret_is_env_only_fail_closed(monkeypatch):
+    """签名密钥无缺省值：环境变量缺失时直接不可用（fail-closed），
+    避免攻击者用仓内公开的桩串伪造企业微信审批回调。"""
+    from app.policy import ApiError
+    from app.service import wecom_secret
+
+    monkeypatch.delenv("WECOM_STUB_SECRET", raising=False)
+    with pytest.raises(ApiError):
+        wecom_secret()

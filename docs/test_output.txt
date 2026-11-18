@@ -1,56 +1,21 @@
-============================= test session starts ==============================
-platform linux -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0 -- /home/ubuntuuser/venvs/ch2813/bin/python
-cachedir: .pytest_cache
-rootdir: /home/ubuntuuser/work/clawhunt/2813_sales_discount_e2e
-configfile: pytest.ini
-testpaths: tests
-plugins: anyio-4.16.0
-collecting ... collected 39 items
-
-tests/test_branch1_approval_gate.py::test_01_submit_9_discount_approval_routes_to_ops_supervisor PASSED [  2%]
-tests/test_branch1_approval_gate.py::test_02_quote_blocked_before_approval PASSED [  5%]
-tests/test_branch1_approval_gate.py::test_03_quote_blocked_without_any_approval_id PASSED [  7%]
-tests/test_branch1_approval_gate.py::test_04_ops_supervisor_approves_then_quote_issued PASSED [ 10%]
-tests/test_branch1_approval_gate.py::test_05_approval_record_enters_contract_attachments PASSED [ 12%]
-tests/test_branch1_approval_gate.py::test_06_wecom_card_callback_is_an_equivalent_approval_path PASSED [ 15%]
-tests/test_branch1_approval_gate.py::test_07_api_v1_alias_behaves_identically PASSED [ 17%]
-tests/test_branch2_role_escalation.py::test_01_discount_routing_matrix[0.9-9000-ops_supervisor] PASSED [ 20%]
-tests/test_branch2_role_escalation.py::test_01_discount_routing_matrix[0.89-8900-club_manager] PASSED [ 23%]
-tests/test_branch2_role_escalation.py::test_01_discount_routing_matrix[0.85-8500-club_manager] PASSED [ 25%]
-tests/test_branch2_role_escalation.py::test_01_discount_routing_matrix[0.8-8000-club_manager] PASSED [ 28%]
-tests/test_branch2_role_escalation.py::test_02_ops_supervisor_cannot_approve_85 PASSED [ 30%]
-tests/test_branch2_role_escalation.py::test_03_quote_still_blocked_after_ops_attempt PASSED [ 33%]
-tests/test_branch2_role_escalation.py::test_04_club_manager_approves_and_quote_issued PASSED [ 35%]
-tests/test_branch2_role_escalation.py::test_05_club_manager_record_in_contract_attachments PASSED [ 38%]
-tests/test_branch3_bypass_attempts.py::test_01_discount_lowered_after_approval_is_rejected PASSED [ 41%]
-tests/test_branch3_bypass_attempts.py::test_02_new_discount_supersedes_old_approval PASSED [ 43%]
-tests/test_branch3_bypass_attempts.py::test_03_approval_from_another_opportunity_is_rejected PASSED [ 46%]
-tests/test_branch3_bypass_attempts.py::test_04_forged_approval_id_is_rejected PASSED [ 48%]
-tests/test_branch3_bypass_attempts.py::test_05_approval_cannot_be_replayed PASSED [ 51%]
-tests/test_branch3_bypass_attempts.py::test_06_bypass_probe_on_v1_alias_also_blocked PASSED [ 53%]
-tests/test_branch4_rejection.py::test_01_reject_requires_comment PASSED  [ 56%]
-tests/test_branch4_rejection.py::test_02_rejected_approval_blocks_quote PASSED [ 58%]
-tests/test_branch4_rejection.py::test_03_reject_comment_visible_in_workbench PASSED [ 61%]
-tests/test_branch4_rejection.py::test_04_decision_is_final PASSED        [ 64%]
-tests/test_branch4_rejection.py::test_05_can_resubmit_after_rejection PASSED [ 66%]
-tests/test_rules_and_boundaries.py::test_full_price_quote_needs_no_approval PASSED [ 69%]
-tests/test_rules_and_boundaries.py::test_discount_out_of_range_rejected PASSED [ 71%]
-tests/test_rules_and_boundaries.py::test_approval_request_at_full_price_is_meaningless PASSED [ 74%]
-tests/test_rules_and_boundaries.py::test_cross_org_access_blocked PASSED [ 76%]
-tests/test_rules_and_boundaries.py::test_healthz PASSED                  [ 79%]
-tests/test_rules_and_boundaries.py::test_roles_are_seeded_for_ui PASSED  [ 82%]
-tests/test_workbench_form.py::test_club_manager_button_approves PASSED   [ 84%]
-tests/test_workbench_form.py::test_ops_supervisor_button_attempt_is_blocked_with_visible_error PASSED [ 87%]
-tests/test_workbench_form.py::test_reject_without_comment_is_blocked_in_ui PASSED [ 89%]
-tests/ui/test_workbench_ui.py::test_01_ops_supervisor_has_no_button_on_85 PASSED [ 92%]
-tests/ui/test_workbench_ui.py::test_02_club_manager_sees_approve_button_on_85 PASSED [ 94%]
-tests/ui/test_workbench_ui.py::test_03_rejection_comment_is_shown_in_workbench PASSED [ 97%]
-tests/ui/test_workbench_ui.py::test_04_contract_attachment_listed_for_approved_quote PASSED [100%]
-
+==> 1/2 接口与表单用例
+....................................                                     [100%]
 =============================== warnings summary ===============================
 ../../../venvs/ch2813/lib/python3.12/site-packages/fastapi/testclient.py:1
   /home/ubuntuuser/venvs/ch2813/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
     from starlette.testclient import TestClient as TestClient  # noqa
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 39 passed, 1 warning in 7.72s =========================
+36 passed, 1 warning in 1.91s
+
+==> 2/2 浏览器 UI 用例（截图写入 docs/screenshots/）
+....                                                                     [100%]
+=============================== warnings summary ===============================
+../../../venvs/ch2813/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/ubuntuuser/venvs/ch2813/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+4 passed, 1 warning in 5.51s
+
+全部用例通过。截图见 docs/screenshots/，明细见 docs/运行报告.md

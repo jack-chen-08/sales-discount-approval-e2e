@@ -15,13 +15,13 @@
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m playwright install chromium      # 只跑接口用例时可不装
-bash run_tests.sh                          # 期望：39 passed
+bash run_tests.sh                          # 期望：40 passed（36 接口/表单 + 4 浏览器 UI）
 ```
 
 只跑接口层（不需要浏览器）：
 
 ```bash
-python -m pytest tests -q --ignore=tests/ui      # 35 passed
+python -m pytest tests -q --ignore=tests/ui      # 36 passed
 ```
 
 离线环境（无网下载 chromium）时可指定一个**独立的**本地 CDP 端点跑 UI 用例；不要指向任何已登录的个人浏览器，用例不需要登录态、也不读取 cookie：
@@ -128,8 +128,8 @@ docs/
 
 1. **参考实现是最小闭环**：只实现折扣审批与报价单生成，不含会员空间招商的其他环节（合同签署、账单、佣金结算）。
 2. **无并发压测**：审批并发（两人同时点批准）用 `status` 状态机保证不会双写，但未做行级锁与压测；生产需在 `SELECT ... FOR UPDATE` 上加锁。
-3. **企业微信回调为桩**：只校验签名与角色，未接真实卡片模板与加密消息体。
-4. **UI 用例依赖真实浏览器**：无浏览器时自动 `skip`（不伪装成通过），接口层 35 条仍然全覆盖。
+3. **企业微信回调为桩**：只校验签名与角色，未接真实卡片模板与加密消息体。签名密钥只从环境变量 `WECOM_STUB_SECRET` 读取、无缺省值（fail-closed）：未配置时回调直接拒绝，不给「公开桩串伪造审批」留口子。
+4. **UI 用例依赖真实浏览器**：无浏览器时自动 `skip`（不伪装成通过），接口层 36 条仍然全覆盖。
 5. **Playwright 跨栈注意事项**：浏览器在 Windows、服务在 WSL 时，浏览器必须用 WSL 对外 IP 访问（`PW_BASE_HOST` 可覆盖），否则 `127.0.0.1` 在两个网络栈里不是同一个地址。本仓 `tests/ui/conftest.py::_browser_host()` 已自动处理。
 
 ---

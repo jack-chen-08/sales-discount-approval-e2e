@@ -323,14 +323,22 @@ def list_quotes(session: Session, opportunity_id: str) -> list[Quote]:
 
 
 # ---------------------------------------------------------------- 企业微信卡片审批回调
-# 签名密钥只从环境变量读取；缺省值仅是公开的本地用例桩串（仓内不含任何真实密钥）。
-# 真实接入时必须显式设置 WECOM_STUB_SECRET，未设置时回调签名会与真实密钥不匹配而被拒。
-WECOM_SECRET = os.getenv("WECOM_STUB_SECRET", "stub-secret-for-tests")
+# 签名密钥只允许从环境变量读取，**不设任何缺省值**（fail-closed）：
+# 未配置 WECOM_STUB_SECRET 时，签名校验直接失败，回调一律拒绝，避免用公开已知的桩串伪造审批。
+def wecom_secret() -> str:
+    secret = os.getenv("WECOM_STUB_SECRET")
+    if not secret:
+        raise ApiError(
+            500,
+            ErrorCode.WECOM_SIGNATURE_INVALID,
+            "企业微信签名密钥未配置：只允许从环境变量 WECOM_STUB_SECRET 读取（本地用例由 tests/conftest.py 注入测试值）",
+        )
+    return secret
 
 
 def wecom_signature(approval_id: str, action: str, operator_id: str) -> str:
     msg = f"{approval_id}:{action}:{operator_id}".encode()
-    return hmac.new(WECOM_SECRET.encode(), msg, hashlib.sha256).hexdigest()
+    return hmac.new(wecom_secret().encode(), msg, hashlib.sha256).hexdigest()
 
 
 def handle_wecom_callback(session: Session, approval_id: str, action: str, operator_id: str,
