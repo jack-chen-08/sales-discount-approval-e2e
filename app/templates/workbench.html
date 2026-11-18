@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>招商工作台 · 折扣审批</title>
+  <style>
+    :root { --line:#e3e6eb; --brand:#0052d9; --muted:#6b7280; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; background:#f5f7fa; color:#1f2329; }
+    header { background:#fff; border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:16px; align-items:center; }
+    header h1 { font-size:16px; margin:0; font-weight:600; }
+    .who { margin-left:auto; font-size:13px; color:var(--muted); }
+    main { max-width:1040px; margin:20px auto; padding:0 16px; display:grid; gap:16px; }
+    section { background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px 20px; }
+    section h2 { font-size:14px; margin:0 0 12px; font-weight:600; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--muted); font-weight:500; background:#fafbfc; }
+    .tag { display:inline-block; padding:1px 8px; border-radius:10px; font-size:12px; }
+    .pending { background:#fff3e0; color:#ad6800; }
+    .approved { background:#e8f8ee; color:#0f7b3f; }
+    .rejected { background:#fdecec; color:#c62828; }
+    .superseded { background:#eef0f3; color:#6b7280; }
+    button { font:inherit; font-size:12px; padding:5px 12px; border-radius:4px; border:1px solid var(--brand);
+             background:var(--brand); color:#fff; cursor:pointer; }
+    button.ghost { background:#fff; color:var(--brand); }
+    .muted { color:var(--muted); font-size:12px; }
+    .comment { color:#c62828; }
+    .locked { color:var(--muted); font-size:12px; }
+    .banner { border:1px solid #f3c2c2; background:#fdecec; color:#c62828; padding:8px 12px; border-radius:6px; font-size:13px; }
+    .users a { margin-right:10px; font-size:12px; color:var(--brand); text-decoration:none; }
+    .users a.active { font-weight:700; text-decoration:underline; }
+    code { background:#f2f3f5; padding:1px 5px; border-radius:3px; font-size:12px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>招商工作台 · 折扣审批</h1>
+  <span class="who" data-testid="current-user">{{ current.name }}（{{ current.role }}）</span>
+</header>
+
+<main>
+  <section class="users" data-testid="role-switcher">
+    <span class="muted">切换登录身份：</span>
+    {% for u in users %}
+      <a href="/workbench?opportunity_id={{ opportunity.id }}&as_user={{ u.id }}"
+         class="{% if u.id == current.id %}active{% endif %}" data-testid="as-{{ u.role }}">{{ u.name }}（{{ u.role }}）</a>
+    {% endfor %}
+    {% if request.query_params.get('error') %}
+      <div class="banner" data-testid="error-banner" style="margin-top:10px">操作被拒绝：{{ request.query_params.get('error') }}</div>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>商机</h2>
+    <div data-testid="opportunity">
+      <div><strong>{{ opportunity.name }}</strong></div>
+      <div class="muted">阶段 {{ opportunity.stage }} · 预估月租 {{ '%.2f'|format(opportunity.expected_monthly_rent_cents / 100) }} 元</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>折扣审批单</h2>
+    {% if approvals %}
+    <table data-testid="approval-table">
+      <thead>
+        <tr><th>单号</th><th>折扣</th><th>状态</th><th>审批角色</th><th>驳回/失效意见</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+      {% for a in approvals %}
+        <tr data-testid="approval-row" data-approval-id="{{ a.id }}" data-status="{{ a.status }}" data-discount="{{ a.discount }}">
+          <td><code>{{ a.short_id }}</code></td>
+          <td>{{ a.discount }}</td>
+          <td><span class="tag {{ a.status }}" data-testid="status-{{ a.short_id }}">{{ a.status }}</span></td>
+          <td>{{ a.required_role }}</td>
+          <td>
+            {% if a.decision_comment %}<span class="comment" data-testid="rejection-comment-{{ a.short_id }}">{{ a.decision_comment }}</span>{% endif %}
+            {% if a.invalidated_reason %}<span class="muted">失效原因：{{ a.invalidated_reason }}</span>{% endif %}
+          </td>
+          <td>
+            {% if a.can_approve %}
+              <form method="post" action="/workbench/decision" style="display:inline">
+                <input type="hidden" name="approval_id" value="{{ a.id }}" />
+                <input type="hidden" name="action" value="approve" />
+                <input type="hidden" name="operator_id" value="{{ current.id }}" />
+                <input type="hidden" name="opportunity_id" value="{{ opportunity.id }}" />
+                <button type="submit" data-testid="approve-btn-{{ a.short_id }}">审批通过</button>
+              </form>
+              <form method="post" action="/workbench/decision" style="display:inline">
+                <input type="hidden" name="approval_id" value="{{ a.id }}" />
+                <input type="hidden" name="action" value="reject" />
+                <input type="hidden" name="operator_id" value="{{ current.id }}" />
+                <input type="hidden" name="opportunity_id" value="{{ opportunity.id }}" />
+                <button type="submit" class="ghost" data-testid="reject-btn-{{ a.short_id }}">驳回</button>
+              </form>
+            {% else %}
+              <span class="locked" data-testid="no-approve-{{ a.short_id }}">当前身份无审批入口</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="muted" data-testid="no-approvals">暂无审批单</div>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>合同附件清单</h2>
+    <ul data-testid="attachments">
+      {% for f in attachments %}
+        <li data-testid="attachment-item">{{ f.title }}　<code>{{ f.file_ref }}</code></li>
+      {% else %}
+        <li class="muted" data-testid="attachments-empty">暂无附件</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>已生成报价单</h2>
+    <ul data-testid="quotes">
+      {% for q in quotes %}
+        <li data-testid="quote-item">{{ '%.2f'|format(q.discount_bp / 1000) }} 折 · {{ '%.2f'|format(q.amount_cents / 100) }} 元
+          · 审批 <code>{{ (q.approval_id or '—')[:8] }}</code></li>
+      {% else %}
+        <li class="muted" data-testid="quotes-empty">暂无报价单</li>
+      {% endfor %}
+    </ul>
+  </section>
+</main>
+</body>
+</html>
