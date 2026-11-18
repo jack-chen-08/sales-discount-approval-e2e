@@ -24,7 +24,7 @@ bash run_tests.sh                          # 期望：39 passed
 python -m pytest tests -q --ignore=tests/ui      # 35 passed
 ```
 
-复用手边已开着的浏览器（含登录态、无网下载浏览器时）：
+离线环境（无网下载 chromium）时可指定一个**独立的**本地 CDP 端点跑 UI 用例；不要指向任何已登录的个人浏览器，用例不需要登录态、也不读取 cookie：
 
 ```bash
 PW_CDP=http://127.0.0.1:9222 python -m pytest tests/ui -q
