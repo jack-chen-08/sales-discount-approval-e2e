@@ -323,6 +323,8 @@ def list_quotes(session: Session, opportunity_id: str) -> list[Quote]:
 
 
 # ---------------------------------------------------------------- 企业微信卡片审批回调
+# 签名密钥只从环境变量读取；缺省值仅是公开的本地用例桩串（仓内不含任何真实密钥）。
+# 真实接入时必须显式设置 WECOM_STUB_SECRET，未设置时回调签名会与真实密钥不匹配而被拒。
 WECOM_SECRET = os.getenv("WECOM_STUB_SECRET", "stub-secret-for-tests")
 
 

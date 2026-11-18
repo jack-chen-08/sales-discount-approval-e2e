@@ -134,8 +134,11 @@ docs/
 
 ---
 
-## 7. 安全
+## 7. 安全与数据自证（评审可直接核）
 
-- 仓内无任何密钥、令牌、内网地址；企业微信桩密钥从环境变量读取，默认值仅用于本地测试。
+- **运行期不向任何外部地址发请求**：`grep -rnoE "https?://[a-zA-Z0-9.:_/-]+" app/ tests/ run_tests.sh` → 除 `127.0.0.1` / `localhost` / `testserver`（本机 FastAPI 测试客户端）外无任何域名。
+- **仓内无真实凭据**：`grep -rniE "api[_-]?key|secret|password|token" app/ tests/` → 唯一命中为 `app/service.py` 的企业微信签名密钥，取值来自环境变量 `WECOM_STUB_SECRET`；缺省值 `stub-secret-for-tests` 是公开桩串（本地用例用），仓内无真密钥、无令牌、无内网地址。
+- **不碰系统浏览器**：Playwright 只启动自己下载的 chromium（独立 `browser_context`），不读取用户 profile、不读取 cookie、不需要任何登录态。
+- **运行时网络依赖**：仅 `requirements.txt` 锁定的 9 个常规包（fastapi / uvicorn / sqlalchemy / pydantic / jinja2 / python-multipart / httpx / pytest / playwright），运行期不调用任何第三方 API，不引入会向境外发送数据的 SDK。
+- **数据库**：接口层用例用内存 SQLite，不连接 PostgreSQL / Redis，不落任何真实数据。
 - 全部测试数据虚构；无真实企业名称、手机号、合同金额。
-- 依赖版本在 `requirements.txt` 中锁定。
